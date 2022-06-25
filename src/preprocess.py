@@ -1,5 +1,6 @@
 import numpy as np
 import pretty_midi
+
 # import convert
 from glob import glob
 import os
@@ -43,8 +44,11 @@ def get_chroma(song, chroma_dims=12, n_notes=78):
     return chroma
 
 
-def reshape_step(midi, n_sequences, total_timesteps):
-    """Trims the song 
+def reshape_step(midi, n_sequences, total_timesteps, note_range):
+    """Trims the song and reshapes it to (-1, total_timesteps, note_range).
+
+    This creates a number of phrases of shape (total_timesteps, note_range) that will be used as
+    input for the model.
 
     Parameters
     ----------
@@ -60,7 +64,8 @@ def reshape_step(midi, n_sequences, total_timesteps):
     -------
     input_
     """
-    return midi[: n_sequences * total_timesteps]  # discard any extra timesteps
+    midi = midi[: n_sequences * total_timesteps]  # discard any extra timesteps
+    return midi.reshape((-1, total_timesteps, note_range))
 
 
 def clip_midi(midi, low, high):
@@ -111,7 +116,7 @@ def get_songs(path, n_bars=4, fs=16, low=24, high=102):
     n_bars : int
         The number of bars that each song sequence will have.
     fs : int
-        The sampling rate when generating the piano roll. It is also the number of 
+        The sampling rate when generating the piano roll. It is also the number of
         notes that each bar will contain.
     low : int
         Index of lowest note to keep.
@@ -130,6 +135,7 @@ def get_songs(path, n_bars=4, fs=16, low=24, high=102):
     songs, fnames, chromas = [], [], []
 
     total_timesteps = n_bars * fs
+    note_range = high - low
     for f in files:
         try:
             data = pretty_midi.PrettyMIDI(f)
@@ -140,16 +146,14 @@ def get_songs(path, n_bars=4, fs=16, low=24, high=102):
 
             chroma = get_chroma(song)
 
-            # calculate the number of sequences of size n_bars * fs 
+            # calculate the number of sequences of size n_bars * fs
             # we can use to split this song into
             n_sequences = song.shape[0] // total_timesteps
 
-            # Then use it to reshape the song and chromas
-            # Note: At the moment this simply reshapes the song and treats it as a whole
-            # Another approach to be tried is to split the song into `n_sequences` and add 
-            # each sequence individually to the training set. TODO
-            song = reshape_step(song, n_sequences, total_timesteps)
-            chroma = reshape_step(chroma, n_sequences, total_timesteps)
+            song = reshape_step(song, n_sequences, total_timesteps, note_range)
+            chroma = reshape_step(
+                chroma, n_sequences, total_timesteps, chroma.shape[-1]
+            )
 
             songs.append(song)
             chromas.append(chroma)
@@ -204,21 +208,21 @@ def join_datasets(song_ds, chroma_ds, shuffle, shuffle_buffer=10000):
 
     The map function expanding dims essentially creates a batch of size 1 so that
     it fits the model inputs
-
     """
-    ds = tf.data.Dataset.zip((song_ds, chroma_ds)).map(
-        lambda song, chroma: (
-            tf.expand_dims(song, axis=0),
-            tf.expand_dims(chroma, axis=0),
-        )
-    )
+    ds = tf.data.Dataset.zip((song_ds, chroma_ds))
+    # .map(
+    #     lambda song, chroma: (
+    #         tf.expand_dims(song, axis=0),
+    #         tf.expand_dims(chroma, axis=0),
+    #     )
+    # )
     if shuffle:
         ds = ds.shuffle(shuffle_buffer)
 
     return ds.prefetch(1)
 
 
-def load_data(fpath, genre, note_range=(24, 102), shuffle=True):
+def load_data(fpath, genre, note_range=(24, 102), n_bars=4, fs=16, shuffle=True):
     """Loads and preprocess the data as required for ChordGAN
 
     Parameters
@@ -229,6 +233,10 @@ def load_data(fpath, genre, note_range=(24, 102), shuffle=True):
         Genre of dataset to be loaded.
     note_range: tuple(int, int)
         The indices of the lowest and highest notes to keep.
+    n_bars : int
+        The number of bars that each song sequence will have.
+    fs : int
+        Sampling rate.
     shuffle : bool
         Whether to shuffle the resulting dataset. Setting it to False is useful when
         processing a dataset for genre transfer as the songs will retain their order
@@ -243,7 +251,9 @@ def load_data(fpath, genre, note_range=(24, 102), shuffle=True):
 
     low_note, high_note = note_range
 
-    songs, names, chromas = get_songs(full_path, low=low_note, high=high_note)
+    songs, names, chromas = get_songs(
+        full_path, low=low_note, high=high_note, fs=fs, n_bars=n_bars
+    )
     song_ds = create_dataset(songs)
     chromas_ds = create_dataset(chromas)
 
