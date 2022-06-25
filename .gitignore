@@ -1,0 +1,6 @@
+.vscode/
+converted_songs/
+training_logs/
+trained_models/
+__pycache__/
+_old_chordgan_env.yaml
