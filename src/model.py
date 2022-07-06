@@ -3,12 +3,11 @@ from tensorflow import keras
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, Concatenate
 from tensorflow.keras.activations import sigmoid
-from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError
+from tensorflow.keras.losses import BinaryCrossentropy
 from tensorflow.keras.optimizers import Adam
 
 from src.utils import restore_pianoroll
 from reverse_pianoroll import piano_roll_to_pretty_midi
-
 
 
 def xavier_init(size, dtype=None):
@@ -26,7 +25,7 @@ class ChordGAN(Model):
         generator_units=128,
         discriminator_units=512,
         lambda_=100,
-        loss_func=MeanSquaredError(),
+        loss_func="MeanSquaredError",
         name="ChordGAN",
         **kwargs,
     ):
@@ -37,14 +36,18 @@ class ChordGAN(Model):
         note_range : int
             Range of lowest/highest note on the piano roll
         chroma_dims : int
+            The number of chroma dimensions, 12 for equal temperament tuning.
         n_timesteps : int
             This is the number of timesteps that we will create at a time
         generator_units : int
+            Number of units to use for the generator.
         discriminator_units : int
+            Number of units to use for the discriminator.
         lambda_ : int
             The value of lambda_, a parameter controling ____ TODO: fill in
-        loss_func : Instance of tf.keras.losses
-            The type of loss to use for the generated fake samples.
+        loss_func : string
+            The loss function to use for the generated samples. The loss is fetched using
+            `keras.losses.get(func_name)`.
         name : str
             The name of the model.
         **kwargs :
@@ -57,11 +60,9 @@ class ChordGAN(Model):
         self.generator_units = generator_units
         self.discriminator_units = discriminator_units
         self.lambda_ = lambda_
-        self.loss_func = loss_func
+        self.loss_func = keras.losses.get(loss_func)
 
-        self.X_dim = (
-            self.note_range
-        )  # This is the size of the visible layer.
+        self.X_dim = self.note_range  # This is the size of the visible layer.
         self.Z_dim = self.chroma_dims
 
         self.generator = self._build_generator(self.X_dim, self.Z_dim)
@@ -202,6 +203,11 @@ class ChordGAN(Model):
         self.g_optimizer = g_optimizer
 
     def train_step(self, inputs):
+        """Run a training step with the given inputs.
+
+        The inputs to this function should be a zipped dataset of size two. The first element
+        being the pianoroll and the second the corresponding chromagram.
+        """
         actual_song, chroma = inputs
 
         # train the discriminator
@@ -247,7 +253,9 @@ class ChordGAN(Model):
         converted_song = self.generator(chroma).numpy()[0]
 
         piano_roll = restore_pianoroll(converted_song.T, low_note, high_note)
-        piano_roll_thresh = (piano_roll >= 0.5) * 127 # set all non-zero velocities to 127
+        piano_roll_thresh = (
+            piano_roll >= 0.5
+        ) * 127  # set all non-zero velocities to 127
 
         return piano_roll_to_pretty_midi(piano_roll_thresh, fs=16)
 
