@@ -1,0 +1,24 @@
+preprocessing:
+    low_note: 24
+    high_note: 102
+    n_bars: 4
+    fs: 16
+    shuffle: False # set to false so that we can keep track of the song names
+
+model:
+    note_range: 78
+    chroma_dims: 12
+    n_timesteps: 4
+    generator_units: 128
+    discriminator_units: 512
+    lambda_: 100
+    loss_func: "MeanSquaredError"
+
+training:
+    batch_size: 32
+    epochs: 1_000
+
+optimizer: 
+    class_name: "Adam"
+    learning_rate: 0.001
+
