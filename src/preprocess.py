@@ -131,7 +131,9 @@ def get_songs(path, n_bars=4, fs=16, low=24, high=102):
         List of song names loaded.
     chromas :
     """
+    logger.info(f"Loading files from {path}")
     files = glob("{}/*.mid*".format(path))
+    logger.debug(f"Found {len(files)} to parse.")
     songs, fnames, chromas = [], [], []
 
     total_timesteps = n_bars * fs

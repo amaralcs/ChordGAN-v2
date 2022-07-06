@@ -6,7 +6,7 @@ from tensorflow.keras.activations import sigmoid
 from tensorflow.keras.losses import BinaryCrossentropy
 from tensorflow.keras.optimizers import Adam
 
-from src.utils import restore_pianoroll
+from utils import restore_pianoroll
 from reverse_pianoroll import piano_roll_to_pretty_midi
 
 
