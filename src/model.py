@@ -253,9 +253,9 @@ class ChordGAN(Model):
         converted_song = self.generator(chroma).numpy()[0]
 
         piano_roll = restore_pianoroll(converted_song.T, low_note, high_note)
-        piano_roll_thresh = (
-            piano_roll >= 0.5
-        ) * 127  # set all non-zero velocities to 127
+
+        # set all non-zero velocities to 127
+        piano_roll_thresh = (piano_roll >= 0.5) * 127
 
         return piano_roll_to_pretty_midi(piano_roll_thresh, fs=16)
 
