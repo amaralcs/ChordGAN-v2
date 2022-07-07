@@ -1,5 +1,6 @@
 .vscode/
 converted_songs/
+converted/
 train_logs/
 training_logs/
 trained_models/
