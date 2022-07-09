@@ -1,8 +1,5 @@
-from ast import parse
 import sys
 import os
-import re
-import numpy as np
 import pretty_midi
 from glob import glob
 import json
@@ -35,10 +32,11 @@ def parse_args(argv):
     Argparser
     """
     args = ArgumentParser()
-    args.add_argument("original_fpath", type=str, help="Path to the original songs.")
+    args.add_argument("input_fpath", type=str, help="Path to the original songs.")
+    args.add_argument("target_fpath", type=str, help="Path to the original songs.")
     args.add_argument("transfer_fpath", type=str, help="Path to the converted songs.")
     args.add_argument("model", type=str, help="Name of model to evaluate.")
-    args.add_argument("outpath", type=str, help="Path to save the results to.")
+    args.add_argument("--outpath", type=str, help="Path to save the results to.", default="results")
 
     return args.parse_args(argv)
 
@@ -93,7 +91,7 @@ def load_songs(input_fpath, target_fpath, transfer_fpath):
 
     # load data
     input_fpaths = glob(os.path.join(input_fpath, "*.mid*"))
-    target_fpaths = glob(os.path.join(input_fpath, "*.mid*"))
+    target_fpaths = glob(os.path.join(target_fpath, "*.mid*"))
     transfer_fpaths = glob(os.path.join(transfer_fpath, input_genre, "*.mid*"))
 
     logger.info(f"Loading inputs from {os.path.split(input_fpaths[0])[0]}")
@@ -142,12 +140,12 @@ def compute_style_metric(
     List[np.array]
         The computes time-pitch histograms for each input song.
     """
-    inputs, targets, transfers = song_tup
+    targets, transfers = song_tup
 
-    input_histograms = gen_histograms(inputs, hist_func=hist_func, **kwargs)
+    # input_histograms = gen_histograms(inputs, hist_func=hist_func, **kwargs)
     target_histograms = gen_histograms(targets, hist_func=hist_func, **kwargs)
     transfer_histograms = gen_histograms(transfers, hist_func=hist_func, **kwargs)
-    input_reference_hist = input_histograms.mean(axis=0)
+    # input_reference_hist = input_histograms.mean(axis=0)
     targets_reference_hist = target_histograms.mean(axis=0)
     transfer_reference_hist = transfer_histograms.mean(axis=0)
 
@@ -168,24 +166,25 @@ def compute_style_metric(
 
 def main(argv):
     """Main function to compute evaluation metrics"""
-    # args = parse_args(argv)
-    # original_fpath = args.original_fpath
-    # transfer_fpath = args.transfer_fpath
-    # model = args.model
-    # outpath = args.outpath
+    args = parse_args(argv)
+    input_fpath = args.input_fpath
+    target_fpath = args.target_fpath
+    transfer_fpath = args.transfer_fpath
+    model = args.model
+    outpath = args.outpath
 
     chroma_args = dict(sampling_rate=12, window_size=24, stride=12, use_velocity=False)
     hist_kwargs = dict(max_time=4, bin_size=1 / 6, normed=True)
 
     # Test args
-    input_fpath = "../data/chordGAN/jazz"
-    target_fpath = "../data/chordGAN/pop"
-    transfer_fpath = "converted"
-    model = "pop_run_2022_07_07-10_43_07"
-    outpath = "results"
+    # input_fpath = "../data/chordGAN/jazz"
+    # target_fpath = "../data/chordGAN/pop"
+    # transfer_fpath = "converted"
+    # model = "pop_run_2022_07_07-10_43_07"
+    # outpath = "results"
 
     transfer_fpath = os.path.join(transfer_fpath, model)
-    song_tup, original_genre, transfer_genre = load_songs(
+    (inputs, targets, transfers), original_genre, transfer_genre = load_songs(
         input_fpath, target_fpath, transfer_fpath
     )
 
@@ -195,7 +194,7 @@ def main(argv):
     results = {
         "chroma_similarities": {
             f"{original_genre}2{transfer_genre}": eval_chroma_similarities(
-                *song_tup[0, 2], **chroma_args
+                inputs, transfers, **chroma_args
             )
         }
     }
@@ -203,7 +202,7 @@ def main(argv):
     logger.info(f"Computing time-pitch histograms")
     time_pitch_results = compute_style_metric(
         "time_pitch_diff",
-        song_tup,
+        (targets, transfers),
         time_pitch_diff_hist,
         original_genre,
         transfer_genre,
@@ -214,7 +213,7 @@ def main(argv):
     logger.info(f"Computing onset-duration histograms")
     onset_duration_results = compute_style_metric(
         "onset_duration",
-        song_tup,
+        (targets, transfers),
         onset_duration_hist,
         original_genre,
         transfer_genre,
