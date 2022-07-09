@@ -250,7 +250,7 @@ class ChordGAN(Model):
             Index of highest note to keep.
         """
         # The generator returns a tensor of shape
-        converted_song = self.generator(chroma).numpy()[0]
+        converted_song = self.generator(chroma).numpy()
 
         piano_roll = restore_pianoroll(converted_song.T, low_note, high_note)
 

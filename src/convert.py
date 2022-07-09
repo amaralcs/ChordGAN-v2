@@ -74,18 +74,19 @@ def main(argv):
     fpath = args.fpath
     genre = args.genre
     model_path = args.model_path
-    model_name = model_path.split("/")[-1]
-    model_fpath = os.path.join(os.getcwd(), model_path, "weights", "")
+
     outpath = args.outpath
 
     # debug args
-    fpath = "../data/chordGAN"  # dummy dir with less data
-    genre = "pop"
-    model_path = "trained_models"
-    model_name = "jazz_run_2022_07_07-11_02_11"
+    # fpath = "../data/chordGAN"  # dummy dir with less data
+    # genre = "pop"
+    # model_path = "trained_models/jazz_run_2022_07_07-11_02_11"
+
+    model_name = model_path.split("/")[-1]
+    model_fpath = os.path.join(os.getcwd(), model_path, "weights", "")
 
     # load config
-    config_path = os.path.join(os.getcwd(), model_path, model_name, "config.yaml")
+    config_path = os.path.join(os.getcwd(), model_path, "config.yaml")
     preprocess_params, model_params, _, _ = load_config(config_path)
 
     # prepare dataset
@@ -94,7 +95,7 @@ def main(argv):
     dataset, (songs, names) = load_data(fpath, genre=genre, **preprocess_params)
 
     # Load model
-    model_fpath = os.path.join(os.getcwd(), model_path, model_name, "weights", "")
+    model_fpath = os.path.join(os.getcwd(), model_path, "weights", "")
     logger.debug(f"Loading model from {model_fpath}")
     model = ChordGAN(**model_params)
     model.load_weights(model_fpath)
@@ -110,8 +111,8 @@ def main(argv):
 
         # To obtain the output in the same format as the original song, we need to
         # concatenate the various phrases which the chroma was split into
-        chroma = chroma.reshape(-1, 12)
-        transfer = model()
+        chroma = chroma.numpy().reshape(-1, 12)
+        transfer = model(chroma)
         transfer.write(f"{outpath}/{name}_{idx}_transfer.midi")
 
 
