@@ -5,13 +5,16 @@ from glob import glob
 import json
 import logging
 from argparse import ArgumentParser
+import numpy as np
 
+from preprocess import get_chroma
 from eval_utils import (
     eval_chroma_similarities,
     gen_histograms,
     time_pitch_diff_hist,
     onset_duration_hist,
     eval_style_similarities,
+    tonnetz_distance,
 )
 
 logger = logging.getLogger("evaluation_logger")
@@ -36,7 +39,9 @@ def parse_args(argv):
     args.add_argument("target_fpath", type=str, help="Path to the original songs.")
     args.add_argument("transfer_fpath", type=str, help="Path to the converted songs.")
     args.add_argument("model", type=str, help="Name of model to evaluate.")
-    args.add_argument("--outpath", type=str, help="Path to save the results to.", default="results")
+    args.add_argument(
+        "--outpath", type=str, help="Path to save the results to.", default="results"
+    )
 
     return args.parse_args(argv)
 
@@ -106,6 +111,19 @@ def load_songs(input_fpath, target_fpath, transfer_fpath):
     ]
 
     return (input_songs, target_songs, transferred_songs), input_genre, target_genre
+
+
+def compute_tonnetz_distances(inputs, transfers, original_genre, transfer_genre):
+    input_chromas = [midi.get_chroma() for midi in inputs]
+    transfer_chromas = [midi.get_chroma() for midi in transfers]
+    r = tonnetz_distance(input_chromas, transfer_chromas)
+    return {
+        "tonnetz_distances": {
+            f"{original_genre}2{transfer_genre}": tonnetz_distance(
+                input_chromas, transfer_chromas
+            )
+        }
+    }
 
 
 def compute_style_metric(
@@ -199,7 +217,13 @@ def main(argv):
         }
     }
 
-    logger.info(f"Computing time-pitch histograms")
+    logger.info("Computing tonnetz distances...")
+    tonnetz_results = compute_tonnetz_distances(
+        inputs, transfers, original_genre, transfer_genre
+    )
+    results.update(tonnetz_results)
+
+    logger.info("Computing time-pitch histograms...")
     time_pitch_results = compute_style_metric(
         "time_pitch_diff",
         (targets, transfers),
@@ -210,7 +234,7 @@ def main(argv):
     )
     results.update(time_pitch_results)
 
-    logger.info(f"Computing onset-duration histograms")
+    logger.info("Computing onset-duration histograms...")
     onset_duration_results = compute_style_metric(
         "onset_duration",
         (targets, transfers),
