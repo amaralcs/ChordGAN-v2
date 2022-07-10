@@ -6,6 +6,7 @@ from shutil import copy
 from argparse import ArgumentParser
 from yaml import safe_load, YAMLError
 import matplotlib.pyplot as plt
+import logging
 
 import tensorflow as tf
 from tensorflow import keras
@@ -17,6 +18,10 @@ from tensorflow.keras.callbacks import (
 from preprocess import load_data
 from model import ChordGAN
 
+
+logger = logging.getLogger("training_logger")
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 def parse_args(argv):
     """Parses input options for this module.
