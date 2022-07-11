@@ -124,9 +124,27 @@ def load_songs(input_fpath, target_fpath, transfer_fpath):
 
 
 def compute_tonnetz_distances(inputs, transfers, original_genre, transfer_genre):
+    """Computes the tonnetz distance between the original songs and their transfer
+    to the target genre.
+
+    Parameters
+    ----------
+    inputs : List[pretty_midi.PrettyMIDI]
+        List of tracks from the original genre.
+    transfers : List[pretty_midi.PrettyMIDI]
+        List of tracks converted to the targer genre.
+    input_genre : str
+        Name of original genre.
+    target_genre : str
+        Name of the genre transferred to.
+
+    Returns
+    -------
+    dict
+        The computed tonnetz distances.
+    """
     input_chromas = [midi.get_chroma() for midi in inputs]
     transfer_chromas = [midi.get_chroma() for midi in transfers]
-    r = tonnetz_distance(input_chromas, transfer_chromas)
     return {
         "tonnetz_distances": {
             f"{original_genre}2{transfer_genre}": tonnetz_distance(
@@ -165,8 +183,8 @@ def compute_style_metric(
 
     Returns
     -------
-    List[np.array]
-        The computes time-pitch histograms for each input song.
+    dict
+        Macro and per_song histograms for each input song.
     """
     targets, transfers = song_tup
 
