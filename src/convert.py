@@ -13,7 +13,7 @@ logger = logging.getLogger("convert_logger")
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # Suppress tensorflow info logs
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Suppress tensorflow info logs
 
 
 def parse_args(argv):
@@ -104,7 +104,7 @@ def main(argv):
     logger.debug(f"\tsuccess!")
 
     # Create output paths
-    outpath = f"converted/{model_name}/{genre}"
+    outpath = os.path.join(outpath, model_name, genre)
     os.makedirs(outpath, exist_ok=True)
     logger.info(f"Converting and saving results to {outpath}")
 
