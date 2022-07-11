@@ -5,9 +5,7 @@ from glob import glob
 import json
 import logging
 from argparse import ArgumentParser
-import numpy as np
 
-from preprocess import get_chroma
 from eval_utils import (
     eval_chroma_similarities,
     gen_histograms,
@@ -18,7 +16,7 @@ from eval_utils import (
 )
 
 logger = logging.getLogger("evaluation_logger")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler())
 
 
@@ -35,9 +33,21 @@ def parse_args(argv):
     Argparser
     """
     args = ArgumentParser()
-    args.add_argument("input_fpath", type=str, help="Path to the original songs.")
-    args.add_argument("target_fpath", type=str, help="Path to the original songs.")
-    args.add_argument("transfer_fpath", type=str, help="Path to the converted songs.")
+    args.add_argument(
+        "input_fpath",
+        type=str,
+        help="Path to original songs before transfer.",
+    )
+    args.add_argument(
+        "target_fpath",
+        type=str,
+        help="Path to songs in the style the model was trained.",
+    )
+    args.add_argument(
+        "transfer_fpath",
+        type=str,
+        help="Path to input songs transferred to target style.",
+    )
     args.add_argument("model", type=str, help="Name of model to evaluate.")
     args.add_argument(
         "--outpath", type=str, help="Path to save the results to.", default="results"
@@ -91,8 +101,8 @@ def load_songs(input_fpath, target_fpath, transfer_fpath):
     # Get the names of the genres
     input_genre = os.path.split(input_fpath)[-1]
     target_genre = os.path.split(target_fpath)[-1]
-    logger.debug(f"\toriginal_genre: {input_genre}")
-    logger.debug(f"\transfer_genre: {target_genre}")
+    logger.debug(f"\tinput_genre: {input_genre}")
+    logger.debug(f"\ttarget_genre: {target_genre}")
 
     # load data
     input_fpaths = glob(os.path.join(input_fpath, "*.mid*"))

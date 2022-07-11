@@ -106,7 +106,7 @@ def main(argv):
     # Create output paths
     outpath = f"converted/{model_name}/{genre}"
     os.makedirs(outpath, exist_ok=True)
-    logger.debug(f"Converting and saving results to {outpath}")
+    logger.info(f"Converting and saving results to {outpath}")
 
     for idx, ((_, chroma), name) in enumerate(zip(dataset, names)):
         name = os.path.split(name)[-1].split(".")[0]
