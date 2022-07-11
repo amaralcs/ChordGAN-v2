@@ -448,4 +448,4 @@ def tonnetz_distance(chromas_a, chromas_b):
         tonnetz_a = project_chroma(chroma_a, base_tonnetz)
         tonnetz_b = project_chroma(chroma_b, base_tonnetz)
         distances.append(np.linalg.norm(tonnetz_b - tonnetz_a))
-    return np.array(distances)
+    return distances

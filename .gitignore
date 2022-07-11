@@ -6,3 +6,7 @@ training_logs/
 trained_models/
 __pycache__/
 _old_chordgan_env.yaml
+run_conversion.ps1
+run_eval.ps1
+detect_broken_midi.py
+autotrain.ps1
