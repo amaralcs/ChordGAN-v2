@@ -18,10 +18,12 @@ from tensorflow.keras.callbacks import (
 from preprocess import load_data
 from model import ChordGAN
 
-
 logger = logging.getLogger("training_logger")
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # Suppress tensorflow logs
+
 
 def parse_args(argv):
     """Parses input options for this module.
