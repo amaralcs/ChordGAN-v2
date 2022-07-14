@@ -1,6 +1,16 @@
 .vscode/
 converted_songs/
+converted/
+train_logs/
 training_logs/
 trained_models/
 __pycache__/
 _old_chordgan_env.yaml
+run_conversion.ps1
+run_eval.ps1
+detect_broken_midi.py
+run_experiments.ps1
+chordgan_eval/
+chordgan_eval.zip
+notebooks/data_processing_exploration.ipynb
+notebooks/tonnetz.ipynb

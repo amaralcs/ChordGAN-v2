@@ -10,7 +10,10 @@ from functools import reduce
 
 logger = logging.getLogger("preprocessing_logger")
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s : %(name)s [%(levelname)s] : %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 def get_chroma(song, chroma_dims=12, n_notes=78):
@@ -131,7 +134,9 @@ def get_songs(path, n_bars=4, fs=16, low=24, high=102):
         List of song names loaded.
     chromas :
     """
+    logger.info(f"Loading files from {path}")
     files = glob("{}/*.mid*".format(path))
+    logger.debug(f"Found {len(files)} to parse.")
     songs, fnames, chromas = [], [], []
 
     total_timesteps = n_bars * fs
