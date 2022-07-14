@@ -14,9 +14,9 @@ A re-work of the [ChordGAN Music Style Transfer model](https://github.com/conanl
 ### Setup
 1. Clone the git repo 
 2. 
-   a) download the files from the [original paper](https://conanlu.github.io/chordgan/datasets)
-   b) Provide own files. 
-   c) Alternatively use [Midiworld-scraper](https://github.com/amaralcs/midiworld-scraper) to fetch midi files from [midiworld](https://midiworld.com).
+  - a) download the files from the [original paper](https://conanlu.github.io/chordgan/datasets)
+  - b) Provide own files. 
+  - c) Alternatively use [Midiworld-scraper](https://github.com/amaralcs/midiworld-scraper) to fetch midi files from [midiworld](https://midiworld.com).
 
 Create a directory where each subfolder is named with the genre of the midi files it contains. For example:
 ```
