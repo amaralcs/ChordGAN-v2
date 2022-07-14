@@ -20,9 +20,13 @@ from model import ChordGAN
 
 logger = logging.getLogger("training_logger")
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s : %(name)s [%(levelname)s] : %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # Suppress tensorflow logs
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Suppress tensorflow logs
 
 
 def parse_args(argv):
@@ -213,7 +217,10 @@ def main(argv):
     # Setup training monitoring
     img_writer = tf.summary.create_file_writer(log_dir + "/img")
     log_progress = setup_progress_logger(model, dataset, names, img_writer)
-    callbacks = [TensorBoard(log_dir), LambdaCallback(on_epoch_end=log_progress)]
+    callbacks = [
+        TensorBoard(log_dir),
+        # LambdaCallback(on_epoch_end=log_progress)
+    ]
 
     model.fit(dataset, epochs=epochs, batch_size=batch_size, callbacks=callbacks)
     model.save_weights(f"{model_output}/{model_info}/weights/")

@@ -11,7 +11,11 @@ from model import ChordGAN
 
 logger = logging.getLogger("convert_logger")
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s : %(name)s [%(levelname)s] : %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Suppress tensorflow info logs
 
@@ -39,7 +43,12 @@ def parse_args(argv):
     args.add_argument(
         "--outpath", default="converted", type=str, help="Path to output location."
     )
-
+    args.add_argument(
+        "--config_fname",
+        default="config.yaml",
+        type=str,
+        help="Name of the yaml config file.",
+    )
     return args.parse_args(argv)
 
 
@@ -76,6 +85,7 @@ def main(argv):
     fpath = args.fpath
     genre = args.genre
     model_path = args.model_path
+    config_fname = args.config_fname
 
     outpath = args.outpath
 
@@ -88,7 +98,7 @@ def main(argv):
     model_fpath = os.path.join(os.getcwd(), model_path, "weights", "")
 
     # load config
-    config_path = os.path.join(os.getcwd(), model_path, "config.yaml")
+    config_path = os.path.join(os.getcwd(), model_path, config_fname)
     preprocess_params, model_params, _, _ = load_config(config_path)
 
     # prepare dataset
