@@ -4,10 +4,10 @@ A re-work of the [ChordGAN Music Style Transfer model](https://github.com/conanl
 
 ## Features
 
-[✔️] TensorFlow 2
-[✔️] Documented code
-[✔️] Automated script for style transfer
-[✔️] Automated script for evaluating transfer results
+- [✔️] TensorFlow 2
+- [✔️] Documented code
+- [✔️] Automated script for style transfer
+- [✔️] Automated script for evaluating transfer results
   
 ## Usage
 
