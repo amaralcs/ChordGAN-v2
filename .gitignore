@@ -9,4 +9,8 @@ _old_chordgan_env.yaml
 run_conversion.ps1
 run_eval.ps1
 detect_broken_midi.py
-autotrain.ps1
+run_experiments.ps1
+chordgan_eval/
+chordgan_eval.zip
+notebooks/data_processing_exploration.ipynb
+notebooks/tonnetz.ipynb
