@@ -100,6 +100,7 @@ def main(argv):
     # load config
     config_path = os.path.join(os.getcwd(), model_path, config_fname)
     preprocess_params, model_params, _, _ = load_config(config_path)
+    fs = preprocess_params["fs"]
 
     # prepare dataset
     note_range = (preprocess_params.pop("low_note"), preprocess_params.pop("high_note"))
@@ -124,7 +125,7 @@ def main(argv):
         # To obtain the output in the same format as the original song, we need to
         # concatenate the various phrases which the chroma was split into
         chroma = chroma.numpy().reshape(-1, 12)
-        transfer = model(chroma)
+        transfer = model(chroma, fs=fs)
         transfer.write(f"{outpath}/{name}_{idx}_transfer.midi")
 
 

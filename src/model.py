@@ -236,7 +236,7 @@ class ChordGAN(Model):
 
         return {"d_loss": d_loss, "g_loss": g_loss}
 
-    def call(self, chroma, low_note=24, high_note=102, **kwargs):
+    def call(self, chroma, low_note=24, high_note=102, fs=16):
         """Converts a song given its chroma. The chroma needs to have been correctly reshaped
         as per the preprocessing function.
 
@@ -248,8 +248,8 @@ class ChordGAN(Model):
             Index of lowest note to keep.
         high_note : int
             Index of highest note to keep.
-        kwargs 
-            Arguments to be passed to `piano_roll_to_pretty_midi`.
+        fs : int
+            The sampling rate to use when converting to PrettyMIDI format.
         """
         # The generator returns a tensor of shape
         converted_song = self.generator(chroma).numpy()
@@ -259,7 +259,7 @@ class ChordGAN(Model):
         # set all non-zero velocities to 127
         piano_roll_thresh = (piano_roll >= 0.5) * 127
 
-        return piano_roll_to_pretty_midi(piano_roll_thresh, **kwargs)
+        return piano_roll_to_pretty_midi(piano_roll_thresh, fs=fs)
 
     def summary(self):
         self.generator.summary()

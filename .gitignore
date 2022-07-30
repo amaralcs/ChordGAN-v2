@@ -10,7 +10,9 @@ run_conversion.ps1
 run_eval.ps1
 detect_broken_midi.py
 run_experiments.ps1
+convert_eval.ps1
 chordgan_eval/
 chordgan_eval.zip
 notebooks/data_processing_exploration.ipynb
 notebooks/tonnetz.ipynb
+results/
